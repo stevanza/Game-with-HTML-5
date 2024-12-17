@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Game Tangkap Bola</title>
+    <style>
+        canvas {
+            border: 2px solid black;
+            background-color: #f0f0f0;
+        }
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+        }
+        .score {
+            font-size: 24px;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="score">Skor: <span id="score">0</span></div>
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+
+        // Inisialisasi pemain (keranjang)
+        const player = {
+            x: canvas.width / 2,
+            y: canvas.height - 30,
+            width: 60,
+            height: 10,
+            color: '#0095DD',
+            speed: 7
+        };
+
+        // Inisialisasi bola
+        const ball = {
+            x: Math.random() * (canvas.width - 20),
+            y: 0,
+            radius: 10,
+            color: '#FF0000',
+            speed: 3
+        };
+
+        let score = 0;
+        let rightPressed = false;
+        let leftPressed = false;
+
+        // Event listener untuk kontrol pemain
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Right' || e.key === 'ArrowRight') {
+                rightPressed = true;
+            } else if (e.key === 'Left' || e.key === 'ArrowLeft') {
+                leftPressed = true;
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'Right' || e.key === 'ArrowRight') {
+                rightPressed = false;
+            } else if (e.key === 'Left' || e.key === 'ArrowLeft') {
+                leftPressed = false;
+            }
+        });
+
+        // Fungsi untuk menggambar pemain
+        function drawPlayer() {
+            ctx.beginPath();
+            ctx.rect(player.x - player.width/2, player.y, player.width, player.height);
+            ctx.fillStyle = player.color;
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        // Fungsi untuk menggambar bola
+        function drawBall() {
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = ball.color;
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        // Fungsi untuk mengecek collision
+        function checkCollision() {
+            if (ball.y + ball.radius > player.y &&
+                ball.x > player.x - player.width/2 &&
+                ball.x < player.x + player.width/2) {
+                // Bola tertangkap
+                score += 10;
+                scoreElement.textContent = score;
+                resetBall();
+            }
+        }
+
+        // Fungsi untuk mereset posisi bola
+        function resetBall() {
+            ball.x = Math.random() * (canvas.width - 20);
+            ball.y = 0;
+            ball.speed += 0.2; // Meningkatkan kecepatan setiap kali bola tertangkap
+        }
+
+        // Game loop
+        function update() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Update posisi pemain
+            if (rightPressed && player.x + player.width/2 < canvas.width) {
+                player.x += player.speed;
+            } else if (leftPressed && player.x - player.width/2 > 0) {
+                player.x -= player.speed;
+            }
+
+            // Update posisi bola
+            ball.y += ball.speed;
+
+            // Cek jika bola jatuh
+            if (ball.y + ball.radius > canvas.height) {
+                resetBall();
+            }
+
+            checkCollision();
+            drawPlayer();
+            drawBall();
+
+            requestAnimationFrame(update);
+        }
+
+        // Mulai game
+        update();
+    </script>
+</body>
+</html>
